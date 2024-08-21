@@ -1,5 +1,5 @@
 import { Typography } from "@mui/material";
-import React, { useState } from "react";
+import { useState } from "react";
 import "../styles/login.css";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";

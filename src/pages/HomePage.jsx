@@ -2,15 +2,14 @@ import { Typography } from "@mui/material";
 import React from "react";
 import Table from "../components/Table/Table";
 
-const Brands = () => {
+const HomePage = () => {
   return (
-    <div>
+    <Typography margin={''} component={'div'} sx={{width: '85%'}}>
       <Typography variant="h5" color={"green"}>
-        <h1>Brands xush kleibsssiz</h1>
         <Table />
       </Typography>
-    </div>
+    </Typography>
   );
 };
 
-export default Brands;
+export default HomePage;
