@@ -7,11 +7,28 @@ import { useLocation } from "react-router-dom";
 import Modal from "../Modal/Modal";
 import PutModal from "../Modal/PutModal";
 import { toast } from "react-toastify";
+import Loader from "../Loader/Loader";
+import { Add } from "@mui/icons-material";
 
 export default function Table() {
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
+  const [models, setModels] = useState([]);
 
+  console.log(models);
+
+  //getModelsApi
+
+  async function getModelsApi() {
+    await fetch(`https://autoapi.dezinfeksiyatashkent.uz/api/models`)
+      .then((res) => res.json())
+      .then((data) => setModels(data?.data));
+  }
+  console.log(models);
+
+  useEffect(() => {
+    getModelsApi();
+  }, []);
   //GetCategiesAPI
 
   function getApi() {
@@ -24,13 +41,19 @@ export default function Table() {
   }
   //GetBrandsAPI
 
-  fetch("https://autoapi.dezinfeksiyatashkent.uz/api/brands")
-    .then((res) => res.json())
-    .then((data) => {
-      setBrands(data?.data);
-    })
-    .catch((err) => console.error("Failed to fetch brands:", err));
-
+  function getBrandsApi() {
+    fetch("https://autoapi.dezinfeksiyatashkent.uz/api/brands")
+      .then((res) => res.json())
+      .then((data) => {
+        setBrands(data?.data);
+      })
+      .catch((err) => console.error("Failed to fetch brands:", err));
+  }
+  //useEffect Barnds API
+  useEffect(() => {
+    getBrandsApi();
+  }, []);
+  //UseEffectCategoriesAPI
   useEffect(() => {
     getApi();
   }, []);
@@ -45,7 +68,37 @@ export default function Table() {
     setPostModal((prev) => !prev);
   };
 
-  //DeleteApi
+  //deleteAPiModels
+
+  const deleteApiModels = async (itemId) => {
+    await fetch(
+      `https://autoapi.dezinfeksiyatashkent.uz/api/models/${itemId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          toast.success(data.message, {
+            position: "top-center",
+            autoClose: 1500,
+          });
+
+          getModelsApi();
+        } else {
+          toast.error(data.message, {
+            position: "top-center",
+            autoClose: 1500,
+          });
+        }
+      });
+  };
+
+  //DeleteApi Categories
   const token = localStorage.getItem("tokenxon");
   function deleteApi(itemId) {
     fetch(`https://autoapi.dezinfeksiyatashkent.uz/api/categories/${itemId}`, {
@@ -71,7 +124,36 @@ export default function Table() {
       });
   }
 
-  //edid API
+  //deleteApiBrands
+
+  const deleteApiBrands = async (itemId) => {
+    await fetch(
+      `https://autoapi.dezinfeksiyatashkent.uz/api/brands/${itemId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          toast.success(data.message, {
+            position: "top-center",
+            autoClose: 1500,
+          });
+          getBrandsApi();
+        } else {
+          toast.error(data.message, {
+            position: "top-center",
+            autoClose: 1500,
+          });
+        }
+      });
+  };
+
+  //edid API Categories
 
   const [editModal, setEditModal] = useState(false);
   const [idPut, setIdPut] = useState();
@@ -80,6 +162,7 @@ export default function Table() {
     setEditModal(false);
     setPostModal(false);
   };
+
   return (
     <div>
       <Typography marginTop={"30px"} component={"div"}>
@@ -100,7 +183,13 @@ export default function Table() {
             variant="h5"
           >
             <AccountCircleIcon color="success" />
-            Mijozlar
+            {params?.includes("/home")
+              ? "Home Page"
+              : params.includes("/brands")
+              ? "Brand Page"
+              : params.includes("/models")
+              ? "Models Page"
+              : null}
           </Typography>
           <Button
             onClick={openModal}
@@ -108,11 +197,14 @@ export default function Table() {
             size="large"
             color="primary"
           >
-            Qo'shish
+            ADD CATEGORY <Add />
           </Button>
         </Typography>
         {postModal ? (
           <Modal
+            brands={brands}
+            setBrands={setBrands}
+            params={params}
             getApi={getApi}
             categories={categories}
             setCategories={setCategories}
@@ -124,8 +216,11 @@ export default function Table() {
             openCloseModal={openCloseModal}
             setEditModal={setEditModal}
             putId={idPut}
-            setPostModal = {setPostModal}
-        getApi = {getApi}
+            setPostModal={setPostModal}
+            getApi={getApi}
+            params={params}
+            getBrandsApi={getBrandsApi}
+            getModelsApi={getModelsApi}
           />
         ) : (
           ""
@@ -143,16 +238,24 @@ export default function Table() {
                 <th>IMAGES</th>
                 <th>ACTIONS</th>
               </tr>
-            ) : (
+            ) : params.includes("/brands") ? (
               <tr>
-                <th>BRAND EN</th>
-                <th>NAME RU</th>
+                <th>TITLE</th>
+                <th>IMAGES</th>
+                <th>ACTIONS</th>
               </tr>
-            )}
+            ) : params.includes("/models") ? (
+              <tr>
+                <th>NAME</th>
+                <th>BRAND</th>
+                <th>ACTION</th>
+              </tr>
+            ) : null}
           </thead>
           <tbody>
-            {params?.includes("/home")
-              ? categories?.map((elem, index) => (
+            {params?.includes("/home") ? (
+              categories?.length > 0 ? (
+                categories?.map((elem, index) => (
                   <tr key={index}>
                     <td>{elem?.name_en}</td>
                     <td>{elem?.name_ru}</td>
@@ -179,9 +282,7 @@ export default function Table() {
                         gap={"20px"}
                       >
                         <Button
-                          onClick={() => {
-                            deleteApi(elem?.id);
-                          }}
+                          onClick={() => deleteApi(elem?.id)}
                           variant="contained"
                           size="small"
                           color="error"
@@ -200,12 +301,94 @@ export default function Table() {
                     </td>
                   </tr>
                 ))
-              : brands?.map((elem) => (
+              ) : (
+                <Loader />
+              )
+            ) : params.includes("/brands") ? (
+              brands?.length > 0 ? (
+                brands?.map((elem) => (
                   <tr key={elem.id}>
-                    <td>{elem?.brand_en}</td>
-                    <td>{elem?.name_ru}</td>
+                    <td className="brand-table">{elem?.title}</td>
+                    <td>
+                      {elem?.image_src ? (
+                        <img
+                          src={`https://autoapi.dezinfeksiyatashkent.uz/api/uploads/images/${elem?.image_src}`}
+                          alt={elem?.name_en}
+                          style={{ maxWidth: "100px", maxHeight: "100px" }}
+                        />
+                      ) : (
+                        <Typography>No Image</Typography>
+                      )}
+                    </td>
+                    <td>
+                      <Typography
+                        paddingLeft={"20px"}
+                        component={"div"}
+                        display={"flex"}
+                        alignItems={"center"}
+                        gap={"20px"}
+                      >
+                        <Button
+                          onClick={() => deleteApiBrands(elem?.id)}
+                          variant="contained"
+                          size="small"
+                          color="error"
+                        >
+                          <Delete />
+                        </Button>
+                        <Button
+                          onClick={() => setIdPut(elem?.id)}
+                          variant="contained"
+                          size="small"
+                          color="primary"
+                        >
+                          <Edit onClick={() => setEditModal(true)} />
+                        </Button>
+                      </Typography>
+                    </td>
                   </tr>
-                ))}
+                ))
+              ) : (
+                <Loader />
+              )
+            ) : params.includes("/models") ? (
+              models?.length > 0 ? (
+                models?.map((elem) => (
+                  <tr key={elem?.id}>
+                    <td>{elem?.name}</td>
+                    <td>{elem?.brand_title}</td>
+                    <td>
+                      <Typography
+                        paddingLeft={"20px"}
+                        component={"div"}
+                        display={"flex"}
+                        alignItems={"center"}
+                        gap={"20px"}
+                      >
+                        <Button
+                          onClick={() => deleteApiModels(elem?.id)}
+                          variant="contained"
+                          size="small"
+                          color="error"
+                        >
+                          <Delete />
+                        </Button>
+                        <Button
+                          onClick={() => setIdPut(elem?.id)}
+                          variant="contained"
+                          size="small"
+                          color="primary"
+                        >
+                          <Edit onClick={() => setEditModal(true)} />
+                        </Button>
+                      </Typography>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <Loader />
+              )
+            ) : null}
           </tbody>
         </table>
       </Typography>

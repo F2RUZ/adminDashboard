@@ -21,6 +21,8 @@ const App = () => {
       navigate("/");
     }
   }, []);
+
+  
   return (
     <div>
       <ToastContainer />
@@ -31,7 +33,7 @@ const App = () => {
             <Route path="/home" index element={<HomePage />} />
             <Route path="/category" element={<Category />} />
             <Route path="/cities" element={<Cities />} />
-            <Route path="/model" element={<Model />} />
+            <Route path="/models" element={<Model />} />
             <Route path="/location" element={<Location />} />
             <Route path="/settings" element={<Settings />} />
           </Route>

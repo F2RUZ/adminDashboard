@@ -43,8 +43,8 @@ const Sidebar = () => {
       display={"flex"}
       flexDirection={"column"}
       alignItems={"center"}
-      justifyContent={"space-evenly"}
-      sx={{ minHeight: "100vh" }}
+      gap={"60px"}
+      sx={{ minHeight: "150vh" }}
       bgcolor={"green"}
       component={"div"}
       padding={"30px "}
@@ -85,7 +85,7 @@ const Sidebar = () => {
             <BrandingWatermarkIcon />
           </Typography>
         </NavLink>
-        <NavLink to={"/category"}>
+        <NavLink to={"/models"}>
           <Typography
             display={"flex"}
             alignItems={"center"}
@@ -97,7 +97,7 @@ const Sidebar = () => {
             bgcolor={"lightgreen"}
             component={"div"}
           >
-            <Category />
+            <ModelTraining />
           </Typography>{" "}
         </NavLink>
         <NavLink to="/cities">
@@ -115,23 +115,6 @@ const Sidebar = () => {
             <Apartment />
           </Typography>{" "}
         </NavLink>
-
-        <NavLink to={"/model"}>
-          <Typography
-            display={"flex"}
-            alignItems={"center"}
-            justifyContent={"center"}
-            padding={" 10px"}
-            borderRadius={"5px"}
-            color={"white"}
-            boxShadow={"1px 1px 10px grey"}
-            bgcolor={"lightgreen"}
-            component={"div"}
-          >
-            <ModelTraining />
-          </Typography>{" "}
-        </NavLink>
-
         <NavLink to={"/location"}>
           <Typography
             display={"flex"}
@@ -147,7 +130,6 @@ const Sidebar = () => {
             <MyLocation />
           </Typography>
         </NavLink>
-
         <NavLink to={"/settings"}>
           <Typography
             display={"flex"}

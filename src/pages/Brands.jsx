@@ -6,7 +6,6 @@ const Brands = () => {
   return (
     <div>
       <Typography variant="h5" color={"green"}>
-        <h1>Brands xush kleibsssiz</h1>
         <Table />
       </Typography>
     </div>
