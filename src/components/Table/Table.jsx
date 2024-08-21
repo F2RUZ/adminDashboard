@@ -14,25 +14,22 @@ export default function Table() {
 
   //GetCategiesAPI
 
-  useEffect(() => {
+  function getApi() {
     fetch("https://autoapi.dezinfeksiyatashkent.uz/api/categories")
       .then((res) => res.json())
       .then((data) => {
         setCategories(data?.data);
       })
       .catch((err) => console.error("Failed to fetch categories:", err));
-  }, []);
-
+  }
   //GetBrandsAPI
 
-  function getApi() {
-    fetch("https://autoapi.dezinfeksiyatashkent.uz/api/brands")
-      .then((res) => res.json())
-      .then((data) => {
-        setBrands(data?.data);
-      })
-      .catch((err) => console.error("Failed to fetch brands:", err));
-  }
+  fetch("https://autoapi.dezinfeksiyatashkent.uz/api/brands")
+    .then((res) => res.json())
+    .then((data) => {
+      setBrands(data?.data);
+    })
+    .catch((err) => console.error("Failed to fetch brands:", err));
 
   useEffect(() => {
     getApi();
@@ -77,12 +74,12 @@ export default function Table() {
   //edid API
 
   const [editModal, setEditModal] = useState(false);
+  const [idPut, setIdPut] = useState();
 
   const openCloseModal = () => {
     setEditModal(false);
     setPostModal(false);
   };
-
   return (
     <div>
       <Typography marginTop={"30px"} component={"div"}>
@@ -126,6 +123,9 @@ export default function Table() {
           <PutModal
             openCloseModal={openCloseModal}
             setEditModal={setEditModal}
+            putId={idPut}
+            setPostModal = {setPostModal}
+        getApi = {getApi}
           />
         ) : (
           ""
@@ -189,11 +189,12 @@ export default function Table() {
                           <Delete />
                         </Button>
                         <Button
+                          onClick={() => setIdPut(elem?.id)}
                           variant="contained"
                           size="small"
                           color="primary"
                         >
-                          <Edit />
+                          <Edit onClick={() => setEditModal(true)} />
                         </Button>
                       </Typography>
                     </td>
