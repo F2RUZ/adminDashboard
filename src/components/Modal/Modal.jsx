@@ -13,18 +13,16 @@ const Modal = ({
   categories,
   getApi,
   params,
-
   brands,
   setBrands,
+  getModelsApi,
+  getCitiesApi,
 }) => {
   const [name, setName] = useState();
   const [nameRu, setNameru] = useState();
   const [images, setImages] = useState();
   const [selectModel, setSelectModel] = useState();
   const token = localStorage.getItem("tokenxon");
-
-  // Yangi UUID yaratish
-  const newUUID = uuidv4();
 
   const postAPI = (e) => {
     e.preventDefault();
@@ -103,8 +101,7 @@ const Modal = ({
     const formData = new FormData();
 
     formData.append("name", name);
-    formData.append("brand_id", newUUID);
-    formData.append("brand_title", selectModel);
+    formData.append("brand_id", selectModel);
 
     await fetch(`https://autoapi.dezinfeksiyatashkent.uz/api/models`, {
       method: "POST",
@@ -123,8 +120,46 @@ const Modal = ({
 
           e?.target?.reset();
           setPostModal(false);
+          getModelsApi();
         } else {
           toast.error(data.message, {
+            position: "top-center",
+            autoClose: 1500,
+          });
+        }
+      });
+  };
+
+  const postApiCities = async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("text", nameRu);
+    formData.append("images", images);
+
+    console.log(formData);
+
+    await fetch(`https://autoapi.dezinfeksiyatashkent.uz/api/cities`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.success) {
+          toast.success(data?.message, {
+            position: "top-center",
+            autoClose: 1500,
+          });
+          getCitiesApi();
+          setPostModal(false);
+
+          e?.target?.reset();
+        } else {
+          toast.error(data?.message, {
             position: "top-center",
             autoClose: 1500,
           });
@@ -138,8 +173,9 @@ const Modal = ({
     ? postAPIBrands
     : params.includes("/models")
     ? postApiModels
+    : params.includes("/cities")
+    ? postApiCities
     : null;
-  console.log(params);
 
   return (
     <div className="opasity">
@@ -190,6 +226,8 @@ const Modal = ({
                     ? "Name_en"
                     : params?.includes("/models")
                     ? "Model Name"
+                    : params?.includes("/cities")
+                    ? "Name"
                     : null
                 }
               />
@@ -205,7 +243,13 @@ const Modal = ({
                     setNameru(e?.target?.value);
                   }}
                   type="text"
-                  placeholder="Name_ru"
+                  placeholder={
+                    params?.includes("/home")
+                      ? "Name_ru"
+                      : params?.includes("/cities")
+                      ? "Text"
+                      : null
+                  }
                 />
               </FormControl>
             )}
@@ -219,12 +263,22 @@ const Modal = ({
                   className="modal__file"
                   type="file"
                   required
-                  accept="image/jpg , image/png  "
+                  accept="image/jpg , image/png"
                 />
               </FormControl>
-            ) : params?.includes("/brands") ? null : params?.includes(
-                "/models"
-              ) ? (
+            ) : params?.includes("/brands") ? (
+              <FormControl fullWidth>
+                <input
+                  onChange={(e) => {
+                    setImages(e?.target?.files[0]);
+                  }}
+                  className="modal__file"
+                  type="file"
+                  required
+                  accept="image/jpg , image/png"
+                />
+              </FormControl>
+            ) : params?.includes("/models") ? (
               <FormControl>
                 Model Name
                 <select
@@ -233,11 +287,22 @@ const Modal = ({
                   id=""
                 >
                   <option value="">Select Brand</option>
-                  <option value="audi">Audi</option>
-                  <option value="lamborghini">Lamborghini</option>
-                  <option value="mercedes-benz">Mercedes Benz</option>
-                  <option value="uz-auto-ravon">Uz Auto Ravon</option>
+                  {brands?.map((elem) => (
+                    <option value={elem?.id}>{elem?.title}</option>
+                  ))}
                 </select>
+              </FormControl>
+            ) : params?.includes("/cities") ? (
+              <FormControl fullWidth>
+                <input
+                  onChange={(e) => {
+                    setImages(e?.target?.files[0]);
+                  }}
+                  className="modal__file"
+                  type="file"
+                  required
+                  accept="image/jpg , image/png"
+                />
               </FormControl>
             ) : null}
 

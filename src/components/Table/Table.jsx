@@ -14,8 +14,19 @@ export default function Table() {
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
   const [models, setModels] = useState([]);
+  const [cities, setSeties] = useState([]);
 
-  console.log(models);
+  //getCitiesApi
+
+  async function getCitiesApi() {
+    await fetch("https://autoapi.dezinfeksiyatashkent.uz/api/cities")
+      .then((res) => res.json())
+      .then((data) => setSeties(data?.data));
+  }
+
+  useEffect(() => {
+    getCitiesApi();
+  }, []);
 
   //getModelsApi
 
@@ -24,7 +35,6 @@ export default function Table() {
       .then((res) => res.json())
       .then((data) => setModels(data?.data));
   }
-  console.log(models);
 
   useEffect(() => {
     getModelsApi();
@@ -57,16 +67,6 @@ export default function Table() {
   useEffect(() => {
     getApi();
   }, []);
-
-  const params = useLocation()?.pathname;
-
-  //OpenModal
-
-  const [postModal, setPostModal] = useState(false);
-
-  const openModal = () => {
-    setPostModal((prev) => !prev);
-  };
 
   //deleteAPiModels
 
@@ -153,6 +153,45 @@ export default function Table() {
       });
   };
 
+  //deleteApiCities
+
+  const deleteApiCities = async (itemId) => {
+    await fetch(
+      `https://autoapi.dezinfeksiyatashkent.uz/api/cities/${itemId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          toast.success(data.message, {
+            position: "top-center",
+            autoClose: 1500,
+          });
+          getCitiesApi();
+        } else {
+          toast.error(data.message, {
+            position: "top-center",
+            autoClose: 1500,
+          });
+        }
+      });
+  };
+
+  const params = useLocation()?.pathname;
+
+  //OpenModal
+
+  const [postModal, setPostModal] = useState(false);
+
+  const openModal = () => {
+    setPostModal((prev) => !prev);
+  };
+
   //edid API Categories
 
   const [editModal, setEditModal] = useState(false);
@@ -189,6 +228,12 @@ export default function Table() {
               ? "Brand Page"
               : params.includes("/models")
               ? "Models Page"
+              : params.includes("/cities")
+              ? "Cities page"
+              : params?.includes("/cars")
+              ? "Cars"
+              : params?.includes("/location")
+              ? "Locations"
               : null}
           </Typography>
           <Button
@@ -210,6 +255,8 @@ export default function Table() {
             setCategories={setCategories}
             setPostModal={setPostModal}
             openModal={openModal}
+            getModelsApi={getModelsApi}
+            getCitiesApi={getCitiesApi}
           />
         ) : editModal ? (
           <PutModal
@@ -221,6 +268,8 @@ export default function Table() {
             params={params}
             getBrandsApi={getBrandsApi}
             getModelsApi={getModelsApi}
+            brands={brands}
+            getCitiesApi={getCitiesApi}
           />
         ) : (
           ""
@@ -248,6 +297,14 @@ export default function Table() {
               <tr>
                 <th>NAME</th>
                 <th>BRAND</th>
+                <th>ACTION</th>
+              </tr>
+            ) : params.includes("/cities") ? (
+              <tr>
+                <th>ID</th>
+                <th>NAME</th>
+                <th>TEXT</th>
+                <th>IMAGES</th>
                 <th>ACTION</th>
               </tr>
             ) : null}
@@ -367,6 +424,55 @@ export default function Table() {
                       >
                         <Button
                           onClick={() => deleteApiModels(elem?.id)}
+                          variant="contained"
+                          size="small"
+                          color="error"
+                        >
+                          <Delete />
+                        </Button>
+                        <Button
+                          onClick={() => setIdPut(elem?.id)}
+                          variant="contained"
+                          size="small"
+                          color="primary"
+                        >
+                          <Edit onClick={() => setEditModal(true)} />
+                        </Button>
+                      </Typography>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <Loader />
+              )
+            ) : params.includes("cities") ? (
+              cities?.length > 0 ? (
+                cities?.map((elem, index) => (
+                  <tr key={elem?.id}>
+                    <td>{index + 1}</td>
+                    <td>{elem?.name}</td>
+                    <td>{elem?.text}</td>
+                    <td>
+                      {elem?.image_src ? (
+                        <img
+                          src={`https://autoapi.dezinfeksiyatashkent.uz/api/uploads/images/${elem?.image_src}`}
+                          alt={elem?.name_en}
+                          style={{ maxWidth: "100px", maxHeight: "100px" }}
+                        />
+                      ) : (
+                        <Typography>No Image</Typography>
+                      )}
+                    </td>
+                    <td>
+                      <Typography
+                        paddingLeft={"20px"}
+                        component={"div"}
+                        display={"flex"}
+                        alignItems={"center"}
+                        gap={"20px"}
+                      >
+                        <Button
+                          onClick={() => deleteApiCities(elem?.id)}
                           variant="contained"
                           size="small"
                           color="error"

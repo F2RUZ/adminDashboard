@@ -30,7 +30,7 @@ const LayoutPage = () => {
           <Route path="/cities" element={<Cities />} />
           <Route path="/models" element={<Model />} />
           <Route path="/location" element={<Location />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route path="/cars" element={<Settings />} />
         </Routes>
       </Typography>
     </>

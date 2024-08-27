@@ -1,5 +1,5 @@
 import { Button, FormControl, Input, Typography } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./modal.scss";
 import { Close } from "@mui/icons-material";
 import { toast } from "react-toastify";
@@ -13,20 +13,22 @@ const PutModal = ({
   params,
   getBrandsApi,
   getModelsApi,
+  brands,
+  getCitiesApi,
 }) => {
-  const [name, setName] = useState();
-  const [nameRu, setNameru] = useState();
-  const [images, setImages] = useState();
+  const [name, setName] = useState("");
+  const [nameRu, setNameru] = useState("");
+  const [images, setImages] = useState(null);
   const token = localStorage.getItem("tokenxon");
-  const [selectModel, setSelectModel] = useState();
+  const [selectModel, setSelectModel] = useState("");
 
   const putApi = async (e) => {
+    e.preventDefault();
     const formData = new FormData();
-
     formData.append("name_en", name);
     formData.append("name_ru", nameRu);
     formData.append("images", images);
-    e.preventDefault();
+
     await fetch(
       `https://autoapi.dezinfeksiyatashkent.uz/api/categories/${putId}`,
       {
@@ -59,17 +61,15 @@ const PutModal = ({
 
   const putApiBrands = async (e) => {
     e.preventDefault();
-
     const formData = new FormData();
-
     formData.append("title", name);
     formData.append("images", images);
-    fetch(`https://autoapi.dezinfeksiyatashkent.uz/api/brands/${putId}`, {
+
+    await fetch(`https://autoapi.dezinfeksiyatashkent.uz/api/brands/${putId}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
       },
-
       body: formData,
     })
       .then((res) => res.json())
@@ -94,9 +94,8 @@ const PutModal = ({
   const putApiModels = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-
     formData.append("name", name);
-    // formData.append("brand_title", selectModel);
+    formData.append("brand_id", selectModel);
 
     await fetch(`https://autoapi.dezinfeksiyatashkent.uz/api/models/${putId}`, {
       method: "PUT",
@@ -112,7 +111,6 @@ const PutModal = ({
             position: "top-center",
             autoClose: 1500,
           });
-
           getModelsApi();
           setEditModal(false);
           e?.target?.reset();
@@ -125,13 +123,50 @@ const PutModal = ({
       });
   };
 
+  const putApiCities = async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("text", nameRu);
+    formData.append("images", images);
+    await fetch(`https://autoapi.dezinfeksiyatashkent.uz/api/cities/${putId}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      data: formData,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          toast.success(data?.message, {
+            position: "top-center",
+            autoClose: 1500,
+          });
+          getCitiesApi();
+          setEditModal(false);
+          e?.target?.reset();
+        } else {
+          toast.error(data?.message, {
+            position: "top-center",
+            autoClose: 1500,
+          });
+        }
+      });
+  };
+
+  //CheCkRoute
+
   const checkRoute = params?.includes("/home")
     ? putApi
     : params?.includes("/brands")
     ? putApiBrands
     : params?.includes("/models")
     ? putApiModels
+    : params?.includes("/cities")
+    ? putApiCities
     : null;
+
   return (
     <div className="opasity">
       <Typography
@@ -152,7 +187,6 @@ const PutModal = ({
           component={"div"}
         >
           <Typography variant="h5" color={"green"} fontWeight={"500"}>
-            {" "}
             Update Modal Oyna
           </Typography>
           <Button
@@ -170,50 +204,47 @@ const PutModal = ({
             <FormControl fullWidth>
               <Input
                 required
-                onChange={(e) => {
-                  setName(e?.target?.value);
-                }}
+                onChange={(e) => setName(e?.target?.value)}
                 type="text"
                 placeholder={params?.includes("/home") ? "Name_en" : "Title"}
               />
             </FormControl>
-            {params?.includes("/home") ? (
-              <FormControl fullWidth>
-                <Input
-                  required
-                  onChange={(e) => {
-                    setNameru(e?.target?.value);
-                  }}
-                  type="text"
-                  placeholder="Name_ru"
-                />
-              </FormControl>
-            ) : null}
-            {params?.includes("/home") ? (
+
+            {params?.includes("/home") && (
+              <>
+                <FormControl fullWidth>
+                  <Input
+                    required
+                    onChange={(e) => setNameru(e?.target?.value)}
+                    type="text"
+                    placeholder="Name_ru"
+                  />
+                </FormControl>
+                <FormControl fullWidth>
+                  <input
+                    onChange={(e) => setImages(e?.target?.files[0])}
+                    className="modal__file"
+                    type="file"
+                    required
+                    accept="image/jpg, image/png"
+                  />
+                </FormControl>
+              </>
+            )}
+
+            {params?.includes("/brands") && (
               <FormControl fullWidth>
                 <input
-                  onChange={(e) => {
-                    setImages(e?.target?.files[0]);
-                  }}
+                  onChange={(e) => setImages(e?.target?.files[0])}
                   className="modal__file"
                   type="file"
                   required
-                  accept="image/jpg , image/png  "
+                  accept="image/jpg, image/png"
                 />
               </FormControl>
-            ) : params?.includes("/brands") ? (
-              <FormControl fullWidth>
-                <input
-                  onChange={(e) => {
-                    setImages(e?.target?.files[0]);
-                  }}
-                  className="modal__file"
-                  type="file"
-                  required
-                  accept="image/jpg , image/png  "
-                />
-              </FormControl>
-            ) : params?.includes("/models") ? (
+            )}
+
+            {params?.includes("/models") && (
               <FormControl>
                 Model Name
                 <select
@@ -222,13 +253,35 @@ const PutModal = ({
                   id=""
                 >
                   <option value="">Select Brand</option>
-                  <option value="audi">Audi</option>
-                  <option value="lamborghini">Lamborghini</option>
-                  <option value="mercedes-benz">Mercedes Benz</option>
-                  <option value="uz-auto-ravon">Uz Auto Ravon</option>
+                  {brands?.map((elem) => (
+                    <option value={elem?.id}>{elem?.title}</option>
+                  ))}
                 </select>
               </FormControl>
-            ) : null}
+            )}
+
+            {params?.includes("/cities") && (
+              <>
+                <FormControl fullWidth>
+                  <Input
+                    required
+                    onChange={(e) => setNameru(e?.target?.value)}
+                    type="text"
+                    placeholder="Name_ru"
+                  />
+                </FormControl>
+                <FormControl fullWidth>
+                  <input
+                    onChange={(e) => setImages(e?.target?.files[0])}
+                    className="modal__file"
+                    type="file"
+                    required
+                    accept="image/jpg, image/png"
+                  />
+                </FormControl>
+              </>
+            )}
+
             <Button
               onClick={checkRoute}
               size="large"

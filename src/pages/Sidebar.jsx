@@ -1,5 +1,6 @@
 import {
   Apartment,
+  CarCrashSharp,
   Category,
   Logout,
   ModelTraining,
@@ -130,7 +131,7 @@ const Sidebar = () => {
             <MyLocation />
           </Typography>
         </NavLink>
-        <NavLink to={"/settings"}>
+        <NavLink to={"/cars"}>
           <Typography
             display={"flex"}
             alignItems={"center"}
@@ -142,7 +143,7 @@ const Sidebar = () => {
             bgcolor={"lightgreen"}
             component={"div"}
           >
-            <SettingsIcon />
+            <CarCrashSharp />
           </Typography>
         </NavLink>
       </Typography>
